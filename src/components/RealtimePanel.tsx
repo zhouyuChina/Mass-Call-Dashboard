@@ -1163,7 +1163,7 @@ export function RealtimePanel({
       if (webpages.length === 0) {
         setIntegrationState((prev) => ({
           ...prev,
-          status: 'idle',
+          status: 'success',
           records: [],
           sources: [],
           monitorSummaries: {},
