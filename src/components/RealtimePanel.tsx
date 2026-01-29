@@ -33,7 +33,6 @@ import { toast } from 'sonner@2.0.3';
 import { safeToast } from '../utils/safeToast';
 import { DataSourceSettings, DataState } from '../App';
 import { io } from 'socket.io-client';
-import { useCallDurationMonitor } from '../hooks/useCallDurationMonitor';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://47.237.31.83:7000/api';
 const CALL_RECORDS_URL = `${API_BASE_URL}/call-records`;
@@ -1305,53 +1304,10 @@ export function RealtimePanel({
       safeToast.error('聯調資料同步失敗', message);
     }
   }, [rebuildIntegrationState]);
-  const {
-    records: durationMonitorRecords,
-    isLoading: isCallDurationLoading,
-    error: callDurationError,
-    lastSyncedAt: callDurationLastSyncedAt
-  } = useCallDurationMonitor({ pollIntervalMs: 5000 });
 
-  useEffect(() => {
-    if (!durationMonitorRecords.length && callRecordStoreRef.current.size === 0) {
-      return;
-    }
-
-    const store = new Map(callRecordStoreRef.current);
-    const updatedKeys = new Set<string>();
-
-    durationMonitorRecords.forEach((record) => {
-      const existing = store.get(record.calledNumber);
-      const isEnded = record.status === '通話結束';
-      const status = isEnded ? '通話結束' : existing?.callStatus ?? '通話中';
-      store.set(record.calledNumber, {
-        id: existing?.id ?? `live-${record.calledNumber}`,
-        calledNumber: record.calledNumber,
-        agent: record.agent,
-        note: existing?.note ?? status,
-        callStatus: status,
-        duration: record.duration,
-        recordingUrl: existing?.recordingUrl ?? '',
-        callTime: existing?.callTime ?? new Date(record.createdAt),
-        panel: 'A',
-        integrationSource: existing?.integrationSource
-      });
-      updatedKeys.add(record.calledNumber);
-    });
-
-    store.forEach((record, key) => {
-      if (!updatedKeys.has(key) && record.callStatus !== '通話結束' && !record.integrationSource) {
-        store.set(key, {
-          ...record,
-          callStatus: '通話結束',
-          note: '通話結束'
-        });
-      }
-    });
-
-    callRecordStoreRef.current = store;
-    setCallRecords(Array.from(store.values()));
-  }, [durationMonitorRecords]);
+  // TODO: 通话时长数据将通过 WebSocket 获取，暂时使用空状态
+  const isCallDurationLoading = false;
+  const callDurationLastSyncedAt: Date | null = null;
 
   useEffect(() => {
     if (integrationState.status !== 'success' || integrationState.records.length === 0) {
@@ -1414,11 +1370,6 @@ export function RealtimePanel({
   setCallRecords(Array.from(store.values()));
   }, [integrationState.records, integrationState.sources, integrationState.status]);
 
-  useEffect(() => {
-    if (callDurationError) {
-      safeToast.error('通話時長更新失敗', callDurationError);
-    }
-  }, [callDurationError]);
   const baseCallStatusOptions = useMemo(
     () => Array.from(new Set(callRecords.map((record) => record.callStatus))),
     [callRecords]
