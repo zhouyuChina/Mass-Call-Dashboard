@@ -33,10 +33,8 @@ import { toast } from 'sonner@2.0.3';
 import { safeToast } from '../utils/safeToast';
 import { DataSourceSettings, DataState } from '../App';
 import { io } from 'socket.io-client';
+import { API_BASE_URL, callRecordsApi, ApiError } from '../api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://47.237.31.83:7000/api';
-const CALL_RECORDS_URL = `${API_BASE_URL}/call-records`;
-const CALL_RECORDS_LATEST_URL = `${CALL_RECORDS_URL}/latest`;
 const WEBSOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '/ws');
 const INITIAL_SEAT_COUNT = 20;
 const SEATS_PER_ROW = 10;
@@ -348,15 +346,7 @@ function normalizeCallRecordPayload(payload: any): CallRecordApiEntry | null {
 
 async function fetchLatestCallRecordPage(recordType: string): Promise<ApiWebpageRecord | null> {
   try {
-    const response = await fetch(`${CALL_RECORDS_LATEST_URL}/${recordType}`, {
-      headers: {
-        Accept: 'application/json'
-      }
-    });
-    if (!response.ok) {
-      return null;
-    }
-    const data: CallRecordApiEntry = await response.json();
+    const data = await callRecordsApi.getLatest(recordType);
     return transformCallRecordEntryToWebpage(data);
   } catch (error) {
     console.warn(`⚠️ 無法取得 ${recordType} 最新資料`, error);
@@ -1257,19 +1247,12 @@ export function RealtimePanel({
     }));
 
     try {
-      const url = new URL(CALL_RECORDS_URL);
-      url.searchParams.set('page', '1');
-      url.searchParams.set('limit', '20');
-      url.searchParams.set('recordType', 'get_curcall_in');
-      const response = await fetch(url.toString(), {
-        headers: {
-          Accept: 'application/json'
-        }
+      const listJson = await callRecordsApi.getList({
+        page: 1,
+        limit: 20,
+        recordType: 'get_curcall_in'
       });
 
-      if (!response.ok) throw new Error('無法取得通話記錄資料');
-
-      const listJson: CallRecordsApiResponse = await response.json();
       const recordEntries = Array.isArray(listJson?.data) ? listJson.data : [];
       const baseWebpages = recordEntries
         .map(transformCallRecordEntryToWebpage)
