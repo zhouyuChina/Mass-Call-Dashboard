@@ -29,7 +29,11 @@ class ApiClient {
    * 构建完整的 URL（包含查询参数）
    */
   private buildURL(endpoint: string, params?: Record<string, string | number | boolean>): string {
-    const url = new URL(endpoint, this.baseURL);
+    // 移除 baseURL 末尾的 / 和 endpoint 开头的 /，然后手动拼接
+    const cleanBaseURL = this.baseURL.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.replace(/^\/+/, '');
+    const fullPath = `${cleanBaseURL}/${cleanEndpoint}`;
+    const url = new URL(fullPath);
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
