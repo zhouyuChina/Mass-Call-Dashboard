@@ -6,7 +6,7 @@ import { LoginForm } from './components/LoginForm';
 import { Toaster } from './components/ui/sonner';
 import { installToastInterceptor } from './utils/safeToast';
 import ErrorBoundary from './components/ErrorBoundary';
-import { defaultOperators } from './mocks';
+import { defaultOperators, getMockConfig } from './mocks';
 
 // 操作員接口
 export interface Operator {
@@ -89,7 +89,11 @@ export default function App() {
   // 初始化操作員數據
   useEffect(() => {
     if (operators.length === 0) {
-      setOperators(defaultOperators);
+      const mockConfig = getMockConfig();
+      if (mockConfig.enableOperators) {
+        console.log('🔧 使用 Mock 操作員數據');
+        setOperators(defaultOperators);
+      }
     }
   }, []);
 

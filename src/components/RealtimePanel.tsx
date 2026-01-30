@@ -44,7 +44,7 @@ import {
   extractSourceLabel,
   mergeSummaries
 } from './RealtimePanel/dataTransformers';
-import { defaultAgentNames, DEFAULT_TOTAL_SEATS, SEATS_PER_ROW } from '../mocks';
+import { defaultAgentNames, DEFAULT_TOTAL_SEATS, SEATS_PER_ROW, getMockConfig } from '../mocks';
 
 const WEBSOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '/ws');
 
@@ -534,7 +534,11 @@ export function RealtimePanel({
   const [agentNames, setAgentNames] = useState<string[]>(() => {
     const saved = localStorage.getItem('agentNames');
     const parsed = saved ? JSON.parse(saved) : null;
-    return normalizeAgentNames(parsed, defaultAgentNames);
+    const mockConfig = getMockConfig();
+
+    // 如果启用了 mock 数据，使用默认座席名称
+    const fallbackNames = mockConfig.enableAgents ? defaultAgentNames : [];
+    return normalizeAgentNames(parsed, fallbackNames);
   });
   const totalSeatCount = Math.max(agentNames.length, DEFAULT_TOTAL_SEATS);
   const defaultSeatNumbers = useMemo(
