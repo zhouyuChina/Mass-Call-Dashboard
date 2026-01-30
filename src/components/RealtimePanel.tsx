@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { 
-  Activity, 
-  Phone, 
-  Clock, 
-  TrendingUp, 
-  CheckCircle, 
-  Globe,
-  MapPin,
-  Wifi,
+import {
+  Activity,
+  Phone,
+  Clock,
+  TrendingUp,
+  CheckCircle,
   Timer,
   ChevronDown,
   ChevronLeft,

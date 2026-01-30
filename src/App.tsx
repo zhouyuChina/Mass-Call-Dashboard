@@ -5,6 +5,7 @@ import { StatusBar } from './components/StatusBar';
 import { LoginForm } from './components/LoginForm';
 import { Toaster } from './components/ui/sonner';
 import { installToastInterceptor } from './utils/safeToast';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // 操作員接口
 export interface Operator {
@@ -116,12 +117,12 @@ export default function App() {
   // 如果用戶未登入，顯示登入表單
   if (!currentUser) {
     return (
-      <>
-        <LoginForm 
+      <ErrorBoundary>
+        <LoginForm
           operators={operators}
           onLogin={handleLogin}
         />
-        <Toaster 
+        <Toaster
           position="bottom-left"
           richColors={false}
           closeButton={true}
@@ -138,51 +139,53 @@ export default function App() {
             }
           }}
         />
-      </>
+      </ErrorBoundary>
     );
   }
 
   return (
-    <div className="h-screen bg-slate-600 p-6 flex items-center justify-center">
-      <div className="w-full max-w-6xl h-5/6 bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col relative">
-        {/* Top Navigation */}
-        <SimpleTopNavigation currentUser={currentUser} onLogout={handleLogout} />
-        
-        {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
-          <StatsDashboard 
+    <ErrorBoundary>
+      <div className="h-screen bg-slate-600 p-6 flex items-center justify-center">
+        <div className="w-full max-w-6xl h-5/6 bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col relative">
+          {/* Top Navigation */}
+          <SimpleTopNavigation currentUser={currentUser} onLogout={handleLogout} />
+
+          {/* Main Content */}
+          <div className="flex-1 flex overflow-hidden">
+            <StatsDashboard
+              isRealtimePanelConnected={isRealtimePanelConnected}
+              onRealtimePanelConnect={setIsRealtimePanelConnected}
+              dataSourceSettings={dataSourceSettings}
+              dataState={dataState}
+            />
+          </div>
+
+          {/* Status Bar at bottom */}
+          <StatusBar
             isRealtimePanelConnected={isRealtimePanelConnected}
-            onRealtimePanelConnect={setIsRealtimePanelConnected}
-            dataSourceSettings={dataSourceSettings}
-            dataState={dataState}
+            currentUser={currentUser}
           />
         </div>
-        
-        {/* Status Bar at bottom */}
-        <StatusBar 
-          isRealtimePanelConnected={isRealtimePanelConnected}
-          currentUser={currentUser}
+
+        {/* Toast notifications */}
+        <Toaster
+          position="bottom-left"
+          richColors={false}
+          closeButton={true}
+          gap={8}
+          offset={24}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              border: '1px solid',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              maxWidth: '400px',
+              minHeight: '60px'
+            }
+          }}
         />
       </div>
-      
-      {/* Toast notifications */}
-      <Toaster 
-        position="bottom-left"
-        richColors={false}
-        closeButton={true}
-        gap={8}
-        offset={24}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            border: '1px solid',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            maxWidth: '400px',
-            minHeight: '60px'
-          }
-        }}
-      />
-    </div>
+    </ErrorBoundary>
   );
 }
