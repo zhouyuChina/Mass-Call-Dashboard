@@ -7,7 +7,7 @@ import { Toaster } from './components/ui/sonner';
 import { installToastInterceptor } from './utils/safeToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import { defaultOperators, getMockConfig } from './mocks';
-import { shouldAutoLogin } from './config';
+import { shouldAutoLogin, getDevDefaultUser } from './config';
 
 // 操作員接口
 export interface Operator {
@@ -105,19 +105,12 @@ export default function App() {
 
     // 检查是否应该自动登录
     if (shouldAutoLogin()) {
-      if (operators.length > 0) {
-        // 使用第一个操作员自动登录
-        const devUser = operators[0];
-        if (devUser) {
-          console.log('🚀 开发环境自动登录:', devUser.name);
-          handleLogin(devUser);
-        }
-      } else {
-        console.warn('⚠️ 自动登录失败: 没有可用的操作员数据');
-        console.warn('💡 提示: 请设置 VITE_ENABLE_MOCK=true 启用 mock 数据');
-      }
+      // 使用独立的开发环境默认用户（不依赖 mock 数据）
+      const devUser = getDevDefaultUser();
+      console.log('🚀 开发环境自动登录:', devUser.name);
+      handleLogin(devUser);
     }
-  }, [currentUser, operators, handleLogin]);
+  }, [currentUser, handleLogin]);
 
   // 關閉程式前的警告
   useEffect(() => {

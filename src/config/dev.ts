@@ -2,6 +2,8 @@
  * 开发环境配置
  */
 
+import type { Operator } from '../App';
+
 /**
  * 是否启用开发模式免登录
  * 仅在开发环境下有效
@@ -9,10 +11,19 @@
 export const ENABLE_DEV_AUTO_LOGIN = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTO_LOGIN !== 'false';
 
 /**
- * 开发环境默认用户 token
- * 用于开发环境免登录
+ * 开发环境默认用户
+ * 用于开发环境免登录（不依赖 mock 数据）
  */
-export const DEV_USER_TOKEN = 'dev-token-' + Date.now();
+export const DEV_DEFAULT_USER: Operator = {
+  id: 'dev-user-001',
+  name: '開發者',
+  username: 'dev@local',
+  password: 'dev',
+  role: '管理員',
+  status: '啟用',
+  createdTime: new Date(),
+  lastLogin: new Date()
+};
 
 /**
  * 开发环境配置
@@ -20,8 +31,8 @@ export const DEV_USER_TOKEN = 'dev-token-' + Date.now();
 export interface DevConfig {
   /** 是否启用自动登录 */
   autoLogin: boolean;
-  /** 默认用户 token */
-  userToken: string;
+  /** 默认用户 */
+  defaultUser: Operator;
 }
 
 /**
@@ -30,7 +41,7 @@ export interface DevConfig {
 export function getDevConfig(): DevConfig {
   return {
     autoLogin: ENABLE_DEV_AUTO_LOGIN,
-    userToken: DEV_USER_TOKEN
+    defaultUser: DEV_DEFAULT_USER
   };
 }
 
@@ -49,4 +60,11 @@ export function shouldAutoLogin(): boolean {
 
   console.log('🚀 开发环境自动登录已启用');
   return true;
+}
+
+/**
+ * 获取开发环境默认用户
+ */
+export function getDevDefaultUser(): Operator {
+  return DEV_DEFAULT_USER;
 }

@@ -38,7 +38,24 @@ VITE_DEV_AUTO_LOGIN=false      # 禁用自动登录
 
 ---
 
-#### 3. 连接真实后端
+#### 3. 连接真实后端（免登录）✅
+```bash
+VITE_ENABLE_MOCK=false         # 禁用 mock 数据
+VITE_DEV_AUTO_LOGIN=true       # 启用自动登录
+```
+**效果**：
+- ✅ 使用真实后端 API
+- ✅ 自动登录（使用开发环境默认用户）
+- ✅ 无需手动输入账号密码
+
+**适用场景**：
+- 后端联调（快速测试）
+- 开发环境调试真实 API
+- 跳过登录步骤直接测试功能
+
+---
+
+#### 4. 连接真实后端（需登录）
 ```bash
 VITE_ENABLE_MOCK=false         # 禁用 mock 数据
 VITE_DEV_AUTO_LOGIN=false      # 禁用自动登录
@@ -57,25 +74,32 @@ VITE_DEV_AUTO_LOGIN=false      # 禁用自动登录
 
 ### ⚠️ 错误配置
 
-#### 错误配置 1：Mock 禁用 + 自动登录启用 ❌
+#### ~~错误配置 1：Mock 禁用 + 自动登录启用~~ ✅ 已修复
 ```bash
 VITE_ENABLE_MOCK=false         # 禁用 mock 数据
 VITE_DEV_AUTO_LOGIN=true       # 启用自动登录
 ```
-**问题**：
-- ❌ 没有 mock 操作员数据
-- ❌ 自动登录失败
-- ❌ 卡在登录页面
+**状态**：✅ **现在可以正常工作！**
 
-**控制台错误**：
-```
-⚠️ 自动登录失败: 没有可用的操作员数据
-💡 提示: 请设置 VITE_ENABLE_MOCK=true 启用 mock 数据
-```
+**效果**：
+- ✅ 自动登录使用独立的开发环境默认用户
+- ✅ 不依赖 mock 操作员数据
+- ✅ 可以连接真实后端 API
 
-**解决方案**：
-- 方案 A：设置 `VITE_ENABLE_MOCK=true`
-- 方案 B：设置 `VITE_DEV_AUTO_LOGIN=false`
+**说明**：
+- 自动登录现在使用 `src/config/dev.ts` 中的 `DEV_DEFAULT_USER`
+- 该用户独立于 mock 数据系统
+- 适合需要快速测试真实后端的场景
+
+---
+
+### ⚠️ 注意事项
+
+**自动登录的用户信息**：
+- 用户名：`dev@local`
+- 姓名：開發者
+- 角色：管理員
+- 该用户仅用于开发环境，生产环境不会使用
 
 ---
 
