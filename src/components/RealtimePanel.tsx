@@ -38,6 +38,12 @@ import {
   parsePeerStatusHtml,
   extractCampaignRates
 } from './RealtimePanel/htmlParser';
+import {
+  normalizeWebpageRecords,
+  parseWebpageEntries,
+  extractSourceLabel,
+  mergeSummaries
+} from './RealtimePanel/dataTransformers';
 
 const WEBSOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '/ws');
 const INITIAL_SEAT_COUNT = 20;
