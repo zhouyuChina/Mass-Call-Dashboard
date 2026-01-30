@@ -7,6 +7,7 @@ import { Toaster } from './components/ui/sonner';
 import { installToastInterceptor } from './utils/safeToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import { defaultOperators, getMockConfig } from './mocks';
+import { shouldAutoLogin } from './config';
 
 // 操作員接口
 export interface Operator {
@@ -96,6 +97,22 @@ export default function App() {
       }
     }
   }, []);
+
+  // 开发环境自动登录
+  useEffect(() => {
+    // 如果已经登录，不需要自动登录
+    if (currentUser) return;
+
+    // 检查是否应该自动登录
+    if (shouldAutoLogin() && operators.length > 0) {
+      // 使用第一个操作员自动登录
+      const devUser = operators[0];
+      if (devUser) {
+        console.log('🚀 开发环境自动登录:', devUser.name);
+        handleLogin(devUser);
+      }
+    }
+  }, [currentUser, operators, handleLogin]);
 
   // 關閉程式前的警告
   useEffect(() => {
