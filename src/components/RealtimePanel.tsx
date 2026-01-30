@@ -44,11 +44,9 @@ import {
   extractSourceLabel,
   mergeSummaries
 } from './RealtimePanel/dataTransformers';
+import { defaultAgentNames, DEFAULT_TOTAL_SEATS, SEATS_PER_ROW } from '../mocks';
 
 const WEBSOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '/ws');
-const INITIAL_SEAT_COUNT = 20;
-const SEATS_PER_ROW = 10;
-const DEFAULT_TOTAL_SEATS = INITIAL_SEAT_COUNT;
 
 function chunkSeatNumbers(numbers: number[], perRow: number = SEATS_PER_ROW): number[][] {
   const rows: number[][] = [];
@@ -533,8 +531,6 @@ export function RealtimePanel({
   });
   
   // 座席姓名管理
-  const defaultAgentNames = ['王大明', '李小美', 'Jack', '陳小華', '林志強', 'Mary', '張偉', 'Tom', '劉芳', 'Amy', 
-                             '黃建國', 'David', '周敏', 'Lisa', '吳文昌', 'Peter', '鄭雅婷', 'Emma', '孫偉'];
   const [agentNames, setAgentNames] = useState<string[]>(() => {
     const saved = localStorage.getItem('agentNames');
     const parsed = saved ? JSON.parse(saved) : null;

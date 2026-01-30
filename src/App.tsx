@@ -6,6 +6,7 @@ import { LoginForm } from './components/LoginForm';
 import { Toaster } from './components/ui/sonner';
 import { installToastInterceptor } from './utils/safeToast';
 import ErrorBoundary from './components/ErrorBoundary';
+import { defaultOperators } from './mocks';
 
 // 操作員接口
 export interface Operator {
@@ -88,18 +89,6 @@ export default function App() {
   // 初始化操作員數據
   useEffect(() => {
     if (operators.length === 0) {
-      const defaultOperators: Operator[] = [
-        {
-          id: 'op-admin-001',
-          name: '東南',
-          username: 'manage@gmail.com',
-          password: '1234',
-          role: '管理員',
-          status: '啟用',
-          createdTime: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-          lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000)
-        }
-      ];
       setOperators(defaultOperators);
     }
   }, []);
