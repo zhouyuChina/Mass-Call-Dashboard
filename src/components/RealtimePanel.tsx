@@ -31,6 +31,13 @@ import { safeToast } from '../utils/safeToast';
 import { DataSourceSettings, DataState } from '../App';
 import { io } from 'socket.io-client';
 import { API_BASE_URL, callRecordsApi, ApiError } from '../api';
+import {
+  createEmptyMonitorSummary,
+  parseCallTable,
+  parseCampaignControllerTable,
+  parsePeerStatusHtml,
+  extractCampaignRates
+} from './RealtimePanel/htmlParser';
 
 const WEBSOCKET_URL = API_BASE_URL.replace(/\/api\/?$/, '/ws');
 const INITIAL_SEAT_COUNT = 20;
