@@ -53,7 +53,7 @@ export default defineConfig({
     outDir: 'build',
   },
   server: {
-    port: 9000,
+    port: 5173,  // 改为 Vite 默认端口，避免与后端 9000 端口冲突
     open: true,
   },
 });
