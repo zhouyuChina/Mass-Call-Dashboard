@@ -104,12 +104,17 @@ export default function App() {
     if (currentUser) return;
 
     // 检查是否应该自动登录
-    if (shouldAutoLogin() && operators.length > 0) {
-      // 使用第一个操作员自动登录
-      const devUser = operators[0];
-      if (devUser) {
-        console.log('🚀 开发环境自动登录:', devUser.name);
-        handleLogin(devUser);
+    if (shouldAutoLogin()) {
+      if (operators.length > 0) {
+        // 使用第一个操作员自动登录
+        const devUser = operators[0];
+        if (devUser) {
+          console.log('🚀 开发环境自动登录:', devUser.name);
+          handleLogin(devUser);
+        }
+      } else {
+        console.warn('⚠️ 自动登录失败: 没有可用的操作员数据');
+        console.warn('💡 提示: 请设置 VITE_ENABLE_MOCK=true 启用 mock 数据');
       }
     }
   }, [currentUser, operators, handleLogin]);
