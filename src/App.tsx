@@ -30,8 +30,11 @@ export interface DataSourceSettings {
 export type DataState = 'normal' | 'empty';
 
 export default function App() {
-  // 登入狀態管理
-  const [currentUser, setCurrentUser] = useState<Operator | null>(null);
+  // 登入狀態管理 - 從 localStorage 恢復登錄狀態
+  const [currentUser, setCurrentUser] = useState<Operator | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [operators, setOperators] = useState<Operator[]>([]);
   
   const [isRealtimePanelConnected, setIsRealtimePanelConnected] = useState(true);
@@ -51,11 +54,13 @@ export default function App() {
       ...operator,
       lastLogin: new Date()
     };
-    
+
     setCurrentUser(updatedOperator);
-    
-    setOperators(prev => 
-      prev.map(op => 
+    // 持久化登錄狀態到 localStorage
+    localStorage.setItem('currentUser', JSON.stringify(updatedOperator));
+
+    setOperators(prev =>
+      prev.map(op =>
         op.id === operator.id ? updatedOperator : op
       )
     );
@@ -64,6 +69,8 @@ export default function App() {
   // 登出處理函數
   const handleLogout = useCallback(() => {
     setCurrentUser(null);
+    // 清除 localStorage 中的登錄狀態
+    localStorage.removeItem('currentUser');
     console.log('👋 用戶已登出');
   }, []);
 
