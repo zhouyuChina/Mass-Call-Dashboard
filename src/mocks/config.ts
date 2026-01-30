@@ -4,9 +4,29 @@
 
 /**
  * 是否启用 mock 数据
- * 开发环境默认启用，生产环境默认禁用
+ * 优先级：环境变量 VITE_ENABLE_MOCK > 开发/生产环境判断
+ * - 如果设置了 VITE_ENABLE_MOCK，使用该值
+ * - 否则：开发环境默认启用，生产环境默认禁用
  */
-export const ENABLE_MOCK_DATA = import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK === 'true';
+export const ENABLE_MOCK_DATA = (() => {
+  const envMock = import.meta.env.VITE_ENABLE_MOCK;
+  const isDev = import.meta.env.DEV;
+
+  // 如果明确设置了环境变量，使用环境变量的值
+  if (envMock === 'true') {
+    console.log('🔧 Mock 配置: 环境变量强制启用 (VITE_ENABLE_MOCK=true)');
+    return true;
+  }
+  if (envMock === 'false') {
+    console.log('🔧 Mock 配置: 环境变量强制禁用 (VITE_ENABLE_MOCK=false)');
+    return false;
+  }
+
+  // 否则根据开发/生产环境自动判断
+  const autoEnabled = isDev;
+  console.log(`🔧 Mock 配置: 自动判断 (${isDev ? '开发环境' : '生产环境'}) - ${autoEnabled ? '启用' : '禁用'}`);
+  return autoEnabled;
+})();
 
 /**
  * Mock 数据配置选项
