@@ -503,6 +503,141 @@ interface MonitorSourceData {
   seatStatuses?: PeerSeatStatusRow[];
 }
 
+function inferRecordTypeFromUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  if (/get_curcall_in/i.test(url)) return 'get_curcall_in';
+  if (/get_peer_status/i.test(url)) return 'get_peer_status';
+  if (/cont_controler/i.test(url)) return 'cont_controler';
+  return undefined;
+}
+
+function buildFallbackUrl(recordType?: string, id?: string): string {
+  if (recordType) {
+    return `${API_BASE_URL.replace(/\/+$/, '')}/call-records/${recordType}`;
+  }
+  return `call-record://${id ?? 'unknown'}`;
+}
+
+function transformCallRecordEntryToWebpage(entry?: CallRecordApiEntry | null): ApiWebpageRecord | null {
+  if (!entry) return null;
+  const url =
+    entry.url ||
+    (typeof entry.metadata?.requestUrl === 'string' ? entry.metadata.requestUrl : undefined) ||
+    buildFallbackUrl(entry.recordType, entry.id);
+
+  const rawHtml =
+    entry.htmlContent ||
+    entry.content ||
+    entry.responseBody ||
+    entry.parsedData?.rawHtml ||
+    '';
+
+  const domain = (() => {
+    if (!url) return undefined;
+    try {
+      return new URL(url).hostname || undefined;
+    } catch {
+      const match = url.match(/https?:\/\/([^/]+)/i);
+      return match?.[1];
+    }
+  })();
+
+  return {
+    id: entry.id,
+    url,
+    recordType: entry.recordType,
+    title: entry.metadata?.title,
+    content: entry.content,
+    htmlContent: rawHtml || undefined,
+    domain,
+    metadata: {
+      ...(entry.metadata || {}),
+      statusCode: entry.statusCode
+    },
+    createdAt: entry.createdAt,
+    updatedAt: entry.updatedAt,
+    capturedAt: entry.lastUpdateTime || entry.updatedAt || entry.createdAt
+  };
+}
+
+function normalizeCallRecordPayload(payload: any): CallRecordApiEntry | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const source = payload as Record<string, any>;
+  const id = [source.id, source.recordId, source._id].find((value) => typeof value === 'string') as string | undefined;
+  if (!id) return null;
+
+  const rawUrl =
+    source.url ||
+    source.requestUrl ||
+    source.metadata?.requestUrl ||
+    source.metadata?.url;
+
+  const recordType: string | undefined =
+    typeof source.recordType === 'string' ? source.recordType : inferRecordTypeFromUrl(rawUrl);
+
+  const parsedDataSource =
+    typeof source.parsedData === 'object' && source.parsedData !== null
+      ? source.parsedData
+      : typeof source.data === 'object' && source.data !== null
+        ? source.data
+        : undefined;
+
+  const calls = Array.isArray(parsedDataSource?.calls)
+    ? parsedDataSource.calls
+    : Array.isArray(source.calls)
+      ? source.calls
+      : undefined;
+
+  const normalizedParsedData =
+    parsedDataSource || calls
+      ? {
+          ...(parsedDataSource || {}),
+          ...(calls ? { calls } : {}),
+          rawHtml:
+            parsedDataSource?.rawHtml ||
+            source.rawHtml ||
+            source.html ||
+            source.htmlContent ||
+            source.responseBody ||
+            source.content
+        }
+      : undefined;
+
+  const htmlContent =
+    typeof source.htmlContent === 'string'
+      ? source.htmlContent
+      : typeof source.content === 'string'
+        ? source.content
+        : typeof source.responseBody === 'string'
+          ? source.responseBody
+          : normalizedParsedData?.rawHtml;
+
+  return {
+    id,
+    recordType,
+    url: typeof rawUrl === 'string' ? rawUrl : buildFallbackUrl(recordType, id),
+    content: typeof source.content === 'string' ? source.content : undefined,
+    htmlContent: htmlContent,
+    responseBody: typeof source.responseBody === 'string' ? source.responseBody : undefined,
+    parsedData: normalizedParsedData,
+    statusCode: typeof source.statusCode === 'number' ? source.statusCode : undefined,
+    metadata: typeof source.metadata === 'object' && source.metadata !== null ? source.metadata : undefined,
+    createdAt: source.createdAt || source.timestamp || source.created_time,
+    updatedAt: source.updatedAt || source.lastUpdateTime || source.timestamp,
+    lastUpdateTime: source.lastUpdateTime || source.timestamp || source.updatedAt
+  };
+}
+
+async function fetchLatestCallRecordPage(recordType: string): Promise<ApiWebpageRecord | null> {
+  try {
+    const latest = await callRecordsApi.getLatest(recordType);
+    return transformCallRecordEntryToWebpage(latest);
+  } catch (error) {
+    console.warn(`⚠️ 無法取得 ${recordType} 最新記錄`, error);
+    return null;
+  }
+}
+
 export function RealtimePanel({ 
   isConnected = false, 
   onConnect, 
